@@ -7,6 +7,32 @@ class App extends Component {
     this.config = await fetch(`/config`).then(r => r.json());
   }
 
+  handleClick = () => {
+    const stripe = window.Stripe('pk_test_X7m9nJSGV6ERc0lsNAkpySOI');
+    // When the customer clicks on the button, redirect
+    // them to Checkout.
+    stripe
+      .redirectToCheckout({
+        items: [{sku: 'sku_FG0SO9Cg0tJen6', quantity: 1}],
+
+        // Do not rely on the redirect to the successUrl for fulfilling
+        // purchases, customers may not always reach the success_url after
+        // a successful payment.
+        // Instead use one of the strategies described in
+        // https://stripe.com/docs/payments/checkout/fulfillment
+        successUrl: 'https://localhost:3000/success',
+        cancelUrl: 'https://localhost:3000/canceled',
+      })
+      .then(function(result) {
+        if (result.error) {
+          // If `redirectToCheckout` fails due to a browser or network
+          // error, display the localized error message to your customer.
+          var displayError = document.getElementById('error-message');
+          displayError.textContent = result.error.message;
+        }
+      });
+  };
+
   render() {
     return (
       <div className="app">
@@ -37,7 +63,13 @@ class App extends Component {
           </p>
           <div className="summary">
             <div className="price">$20</div>
-            <button className="pre-order">Pre-order</button>
+            <button
+              onClick={this.handleClick}
+              className="pre-order"
+              role="link"
+            >
+              Pre-order
+            </button>
           </div>
         </main>
       </div>
